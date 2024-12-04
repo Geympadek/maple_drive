@@ -4,6 +4,10 @@ from aiogram.client.default import DefaultBotProperties
 from config import TG_TOKEN
 from database import Database
 
+from flask import Flask
+
+app = Flask("maple_drive")
+
 bot = Bot(
     token=TG_TOKEN,
     default=DefaultBotProperties(

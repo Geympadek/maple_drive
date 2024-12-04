@@ -1,0 +1,1 @@
+document.getElementsByTagName("h1")[0].innerHTML += window.Telegram.WebApp.initDataUnsafe.user.first_name;
