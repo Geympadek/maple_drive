@@ -12,29 +12,36 @@ class APIError(Exception):
         self.desc = desc
 
 class APIKeyError(APIError):
-    def __init__(self, desc: str):
+    def __init__(self, desc: str = ""):
         super().__init__(msg="Request is missing a key.", code=400, desc=desc)
 
 class UserNotFoundError(APIError):
-    def __init__(self, desc: str):
+    def __init__(self, desc: str = ""):
         super().__init__(msg="User not found.", code=404, desc=desc)
 
 class UserAlreadyExistsError(APIError):
-    def __init__(self, desc: str):
+    def __init__(self, desc: str = ""):
         super().__init__(msg="User already exists.", code=400, desc=desc)
 
 class FormatError(APIError):
-    def __init__(self, desc: str):
+    def __init__(self, desc: str = ""):
         super().__init__(msg="Value is in wrong format.", code=400, desc=desc)
+
+class WrongPathError(APIError):
+    def __init__(self, desc: str = ""):
+        super().__init__(msg="The given path is wrong.", code=400, desc=desc)
 
 
 @app.errorhandler(APIError)
 def handle_api_error(error: APIError):
-    response = jsonify({
+    data = {
         "message": error.msg,
-        "description": error.desc,
         "code": error.code
-    })
+    }
+    if error.desc != "":
+        data["description"] = error.desc
+
+    response = jsonify(data)
     response.status_code = error.code
 
     return response
