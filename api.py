@@ -2,7 +2,9 @@ from loader import app
 import os
 from os.path import join
 
-from flask import request, jsonify
+import shutil
+
+from flask import request, jsonify, send_file
 
 from api_errors import APIKeyError, UserNotFoundError, UserAlreadyExistsError, success, FormatError, WrongPathError
 
@@ -79,3 +81,17 @@ def list_dir():
     response = jsonify(files)
     response.status_code = 200
     return response
+
+@app.route("/api/download", methods=["GET"])
+def download_file():
+    data = request.get_json()
+
+    user_id: int = get_value(data, "user_id")
+    rel_path: str = get_value(data, "path")
+
+    full_path = join(DB_PATH, str(user_id), rel_path)
+    if os.path.isfile(full_path):
+        return send_file(full_path, as_attachment=True)
+    
+    shutil.make_archive('tmp/archive', 'zip', full_path)
+    return send_file('tmp/archive.zip', as_attachment=True)
