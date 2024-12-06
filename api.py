@@ -98,3 +98,37 @@ def download_file():
     
     shutil.make_archive('tmp/archive', 'zip', full_path)
     return send_file('tmp/archive.zip', as_attachment=True)
+
+@app.route("/api/upload", methods=["POST"])
+def upload_file():
+    pass
+
+@app.route("/api/make_dir", methods=["POST"])
+def make_dir():
+    token = verify_session()
+
+    user_data = security.data_from_token(token)
+    user_id = user_data["user_id"]
+
+    data = request.get_json()
+
+    rel_path: str = get_value(data, "path")
+    user_folder = join(DB_PATH, str(user_id))
+    full_path = join(user_folder, rel_path)
+
+    if not is_inside(full_path, user_folder):
+        raise api_errors.WrongPathError("The specified path is violating.")
+
+    try:
+        os.makedirs(full_path, exist_ok=False)
+    except OSError:
+        raise api_errors.WrongPathError("Folder at the specified location already exists.")
+    return api_errors.success
+
+@app.route("/api/remove", methods=["POST"])
+def remove():
+    pass
+
+@app.route("/api/move", methods=["POST"])
+def move():
+    pass
