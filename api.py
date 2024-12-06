@@ -35,6 +35,15 @@ def verify_session():
         raise api_errors.AccessDeniedError("Provided token is invalid!")
     return token
 
+def is_inside(path: str, folder: str):
+    '''
+    Check if the path is inside the folder
+    '''
+    path = os.path.abspath(path)
+    folder = os.path.abspath(folder)
+
+    return path.startswith(folder)
+
 @app.route('/api/list_dir', methods=['GET'])
 def list_dir():
     token = verify_session()
@@ -48,7 +57,11 @@ def list_dir():
         raise api_errors.UserNotFoundError(f"User with id '{user_id}' doesn't exist")
 
     rel_path = get_value(data, "path")
-    full_path = join(DB_PATH, str(user_id), rel_path)
+    user_folder = join(DB_PATH, str(user_id))
+    full_path = join(user_folder, rel_path)
+
+    if not is_inside(full_path, user_folder):
+        raise api_errors.WrongPathError("The specified path is violating.")
 
     try:
         listdir = os.listdir(full_path) 
@@ -74,8 +87,12 @@ def download_file():
     data = request.get_json()
 
     rel_path: str = get_value(data, "path")
+    user_folder = join(DB_PATH, str(user_id))
+    full_path = join(user_folder, rel_path)
 
-    full_path = join(DB_PATH, str(user_id), rel_path)
+    if not is_inside(full_path, user_folder):
+        raise api_errors.WrongPathError("The specified path is violating.")
+
     if os.path.isfile(full_path):
         return send_file(full_path, as_attachment=True)
     
