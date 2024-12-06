@@ -9,6 +9,7 @@ from aiogram.filters import Command, StateFilter
 from flask import request, redirect, render_template
 
 import api
+import auth
 
 @dp.message(Command("start"))
 async def on_start(msg: types.Message, state: FSMContext):

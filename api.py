@@ -6,46 +6,19 @@ import shutil
 
 from flask import request, jsonify, send_file
 
-from api_errors import APIKeyError, UserNotFoundError, UserAlreadyExistsError, success, FormatError, WrongPathError
+import security
 
-DB_PATH = "database"
+import api_errors
+from config import DB_PATH
 
 def get_value(data: dict, key: str):
     try:
         return data[key]
     except KeyError:
-        raise APIKeyError(f"Missing {key} value.")
-
-@app.route('/api/register', methods=['POST'])
-def register_user():
-    data = request.get_json()
-
-    try:
-        user_id = int(get_value(data, "user_id"))
-    except ValueError:
-        raise FormatError("Unable to parse user_id.")
-
-    try:
-        os.makedirs(join(DB_PATH, f"{user_id}"), exist_ok=False)
-    except OSError:
-        raise UserAlreadyExistsError(f"Directory '{user_id}' already exists.")
-    return success
+        raise api_errors.APIKeyError(f"Missing {key} value.")
 
 def user_exists(user_id: int | str):
     return os.path.exists(join(DB_PATH, f"{user_id}"))
-
-@app.route('/api/auth', methods=['GET'])
-def auth_user():
-    data = request.get_json()
-
-    try:
-        user_id = int(get_value(data, "user_id"))
-    except ValueError:
-        raise FormatError("Unable to parse user_id.")
-
-    if not user_exists(user_id):
-        raise UserNotFoundError(f"User with id '{user_id}' doesn't exist")
-    return success
 
 def info_from_path(full_path: str):
     _, filename = os.path.split(full_path)
@@ -56,14 +29,23 @@ def info_from_path(full_path: str):
         "type": "file" if ext else "directory"
     }
 
+def verify_session():
+    token = request.cookies.get("token", None)
+    if not security.verify_token(token) or token is None:
+        raise api_errors.AccessDeniedError("Provided token is invalid!")
+    return token
+
 @app.route('/api/list_dir', methods=['GET'])
 def list_dir():
+    token = verify_session()
+
+    user_data = security.data_from_token(token)
+    user_id = user_data["user_id"]
+
     data = request.get_json()
 
-    user_id = get_value(data, "user_id")
-
     if not user_exists(user_id):
-        raise UserNotFoundError(f"User with id '{user_id}' doesn't exist")
+        raise api_errors.UserNotFoundError(f"User with id '{user_id}' doesn't exist")
 
     rel_path = get_value(data, "path")
     full_path = join(DB_PATH, str(user_id), rel_path)
@@ -71,7 +53,7 @@ def list_dir():
     try:
         listdir = os.listdir(full_path) 
     except FileNotFoundError:
-        raise WrongPathError()
+        raise api_errors.WrongPathError("The specified path is invalid.")
 
     files = []
     for entry in listdir:
@@ -84,9 +66,13 @@ def list_dir():
 
 @app.route("/api/download", methods=["GET"])
 def download_file():
+    token = verify_session()
+
+    user_data = security.data_from_token(token)
+    user_id = user_data["user_id"]
+
     data = request.get_json()
 
-    user_id: int = get_value(data, "user_id")
     rel_path: str = get_value(data, "path")
 
     full_path = join(DB_PATH, str(user_id), rel_path)

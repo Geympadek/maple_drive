@@ -4,3 +4,5 @@ TG_TOKEN = "7713160657:AAGEebEL9ZkqXTzCxKFAGR-Sc090TkuiX2Q"
 """
 
 MINI_APP_URL = ""
+
+DB_PATH = "database"

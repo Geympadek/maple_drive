@@ -6,7 +6,10 @@ import hashlib
 import config
 import hmac
 
+from loader import database
 from urllib.parse import parse_qs, unquote, urlencode
+
+import json
 
 TOKEN_LEN = 32
 
@@ -29,7 +32,13 @@ def parse_data_str(data_str: str, sep: str):
     result = {key: value[0] for key, value in data.items()}
     return result
 
-secret_key = hmac.new(msg=config.TG_TOKEN.encode(), key="WebAppData".encode(), digestmod=hashlib.sha256).digest()
+def parse_user_data(data_str: str, sep: str) -> dict:
+    data = parse_data_str(data_str, sep)
+
+    user_data = json.loads(data["user"])
+    return user_data
+
+secret_key = hmac_sha256(config.TG_TOKEN, "WebAppData").digest()
 
 def format_data_str(data_str: str):
     '''
@@ -53,3 +62,19 @@ def validate(data_str: str):
     data_str = format_data_str(data_str)
     test = hmac.new(msg=data_str.encode(), key=secret_key, digestmod=hashlib.sha256).hexdigest()
     return test == hash
+
+def get_token(user_id: int) -> str | None:
+    data = database.read("tokens", filters={"user_id": user_id})
+    return data[0]["token"] if len(data) else None
+
+def push_token(user_id: int):
+    token = gen_token()
+    database.create("tokens", data={"user_id": user_id, "token": token})
+    return token
+
+def data_from_token(token: str):
+    data = database.read("tokens", filters={"token": token})
+    return data[0] if len(data) else None
+
+def verify_token(token: str):
+    return data_from_token(token) is not None

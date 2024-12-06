@@ -22,7 +22,7 @@ class Database:
         """
         Loads the database from the `path`
         """
-        self.connection = sqlite3.connect(path)
+        self.connection = sqlite3.connect(path, check_same_thread=False)
         self.cursor = self.connection.cursor()
 
     def create(self, table: str, data: dict):
@@ -87,7 +87,7 @@ class Database:
 
         values = self.cursor.fetchall()
         return [dict(zip(keys, row)) for row in values]
-
+    
     def delete(self, table: str, filters: dict, logic: str = "AND"):
         """
         Removes data in `table`
