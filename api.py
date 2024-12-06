@@ -127,7 +127,28 @@ def make_dir():
 
 @app.route("/api/remove", methods=["POST"])
 def remove():
-    pass
+    token = verify_session()
+
+    user_data = security.data_from_token(token)
+    user_id = user_data["user_id"]
+
+    data = request.get_json()
+
+    rel_path: str = get_value(data, "path")
+    user_folder = join(DB_PATH, str(user_id))
+    full_path = join(user_folder, rel_path)
+
+    if not os.path.exists(full_path):
+        raise api_errors.WrongPathError("The specified path leads to nothing")
+    
+    if not is_inside(full_path, user_folder) or os.path.samefile(user_folder, full_path):
+        raise api_errors.WrongPathError("The specified path is violating.")
+    
+    if os.path.isfile(full_path):
+        os.remove(full_path)
+    else:
+        shutil.rmtree(full_path)
+    return api_errors.success
 
 @app.route("/api/move", methods=["POST"])
 def move():
