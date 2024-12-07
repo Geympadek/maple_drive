@@ -51,10 +51,10 @@ def list_dir():
     user_data = security.data_from_token(token)
     user_id = user_data["user_id"]
 
-    data = request.get_json()
-
     if not user_exists(user_id):
         raise api_errors.UserNotFoundError(f"User with id '{user_id}' doesn't exist")
+
+    data = request.args.to_dict()
 
     rel_path = get_value(data, "path")
     user_folder = join(DB_PATH, str(user_id))
@@ -84,7 +84,7 @@ def download_file():
     user_data = security.data_from_token(token)
     user_id = user_data["user_id"]
 
-    data = request.get_json()
+    data = request.args.to_dict()
 
     rel_path: str = get_value(data, "path")
     user_folder = join(DB_PATH, str(user_id))
@@ -110,7 +110,7 @@ def make_dir():
     user_data = security.data_from_token(token)
     user_id = user_data["user_id"]
 
-    data = request.get_json()
+    data = request.args.to_dict()
 
     rel_path: str = get_value(data, "path")
     user_folder = join(DB_PATH, str(user_id))
@@ -125,14 +125,14 @@ def make_dir():
         raise api_errors.WrongPathError("Folder at the specified location already exists.")
     return api_errors.success
 
-@app.route("/api/remove", methods=["POST"])
+@app.route("/api/remove", methods=["DELETE"])
 def remove():
     token = verify_session()
 
     user_data = security.data_from_token(token)
     user_id = user_data["user_id"]
 
-    data = request.get_json()
+    data = request.args.to_dict()
 
     rel_path: str = get_value(data, "path")
     user_folder = join(DB_PATH, str(user_id))
@@ -150,6 +150,6 @@ def remove():
         shutil.rmtree(full_path)
     return api_errors.success
 
-@app.route("/api/move", methods=["POST"])
+@app.route("/api/move", methods=["PUT"])
 def move():
     pass

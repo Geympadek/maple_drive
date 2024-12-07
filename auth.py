@@ -8,7 +8,7 @@ from config import DB_PATH
 
 @app.route('/api/register', methods=['POST'])
 def register_user():
-    data_str = request.get_data(as_text=True)
+    data_str = request.query_string.decode()
 
     if not security.validate(data_str):
         raise api_errors.AccessDeniedError("Provided data is not valid.")
@@ -30,7 +30,7 @@ def register_user():
 
 @app.route('/api/auth', methods=['GET'])
 def auth_user():
-    data_str = request.get_data(as_text=True)
+    data_str = request.query_string.decode()
 
     if not security.validate(data_str):
         raise api_errors.AccessDeniedError("Provided data is not valid.")
