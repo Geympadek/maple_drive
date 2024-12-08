@@ -1,0 +1,71 @@
+
+body {
+    --background-color: var(--tg-theme-bg-color);
+    --text-color: var(--tg-theme-text-color);
+    /* explorer view */
+    --file-color: rgb(166, 130, 109);
+    --file-label-color: var(--tg-theme-text-color);
+
+    --folder-color: #D98F4E;
+    --folder-label-color: var(--tg-theme-text-color);
+    
+    background-color: var(--background-color);
+    color: var(--text-color);
+
+    font-family: Rubik;
+    font-weight: 400;
+
+    margin: 0;
+    padding: 0;
+}
+
+#path {
+    margin: 3px;
+    border-color:  #D9663D;
+    border-width: 4px;
+    border-style: solid;
+    border-radius: 10px;
+}
+
+#explorer {
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.file {
+    width: fit-content;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.3rem;
+}
+.file svg {
+    width: 60px;
+    height: 70px;
+    fill: var(--file-color);
+}
+.file p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--file-label-color);
+}
+.folder {
+    width: fit-content;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.3rem;
+}
+.folder svg {
+    width: 60px;
+    height: 70px;
+    fill: var(--folder-color);
+}
+.folder p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--folder-label-color);
+}

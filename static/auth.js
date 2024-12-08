@@ -6,21 +6,43 @@ class AuthError extends Error
     }
 }
 
+async function register()
+{
+    data_str = window.Telegram.WebApp.initData
+    if (data_str == undefined)
+        throw new AuthError("No Telegram data provided.")
+    
+    const response = await fetch(`/api/register?${data_str}`, {
+        method: "POST"
+    })
+    if (!response.ok)
+    {
+        data = await response.json()
+
+        if (data["type"] == "UserAlreadyExistsError")
+            throw new AuthError(data["message"])
+    }
+}
+
 async function auth()
 {
     data_str = window.Telegram.WebApp.initData
     if (data_str == undefined)
-    {
         throw new AuthError("No Telegram data provided.")
-    }
 
-    const response = await fetch('/api/auth', {
-        method: "POST",
-        headers: {
-            "Content-Type": "text/plain"
-        },
-        body: data_str
+    const response = await fetch(`/api/auth?${data_str}`, {
+        method: "GET"
     })
-    console.log(await response.json())
+    if (!response.ok)
+    {
+        data = await response.json()
+
+        if (data["type"] == "UserNotFoundError")
+            await register()
+        else
+            throw new AuthError(data["message"])
+    }
+    document.dispatchEvent(new Event("auth_complete"))
 }
+
 auth()
