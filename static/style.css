@@ -1,0 +1,33 @@
+body {
+    font-family: rubik;
+    font-size: 30px;
+    font-weight: 600;
+    background-color: white;
+}
+#address {
+    display: flex;
+    flex-wrap: wrap;
+}
+#address div {
+    padding: 8px;
+}
+.file_icon {
+    height: 50px;
+}
+.dir_icon {
+    width: 50px;
+}
+main {
+    margin: 10px;
+}
+#explorer .file, #explorer .folder {
+    display: flex;
+    height: 55px;
+}
+.file .desc, .folder .desc {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
